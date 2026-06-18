@@ -14,5 +14,5 @@ Dispatch prompts = runtime args only (paths, branch). Never restate subagent rub
 7. **Implement** per spec. Simplest correct, no hacks, match code, min comments, nothing extra. Commit+push checkpoints, branch `<slug>`.
 8. **Verify** `pnpm -F <pkg> run check` touched pkgs, then root `pnpm check`. Fix before review.
 9. **Review loop** (max 3) dispatch `justly-reviewer-micro`: spec path, `review-N.md`, `$WT`. APPROVED → exit. CHANGES → fix, re-verify, commit+push, fresh reviewer. 3× fail → report, stop.
-10. **PR** `gh pr create` base main head `<slug>`, body = decisions summary.
+10. **PR** FIRST commit+push review/validation docs, THEN `gh pr create` base main head `<slug>`, body = decisions summary.
 11. **Report** worktree+branch, spec, decisions, SA+review cycles & verdicts, PR URL.

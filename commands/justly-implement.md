@@ -106,7 +106,17 @@ Review docs are numbered: `$WT/docs/specs/<slug>/review-1.md`, `review-2.md`, �
 
 ## 10. Open the PR
 
-Once approved, ensure everything is committed and pushed on branch `<slug>`, then open a PR with `gh pr create` (base `main`, head `<slug>`). In the pr body include the final **short but complete decisions summary**.
+Once approved, **first commit + push the review and validation docs** so they land on the branch and are visible in the PR — these are easy to forget because they are not source code:
+
+```
+git -C "$WT" add docs/specs/<slug>
+git -C "$WT" commit -m "docs: spec review for <slug>"
+git -C "$WT" push
+```
+
+(If there is nothing to commit because they were already committed, that is fine — just confirm `git -C "$WT" status` is clean and the docs are pushed.)
+
+Then ensure all code is committed and pushed on branch `<slug>`, and open a PR with `gh pr create` (base `main`, head `<slug>`). In the pr body include the final **short but complete decisions summary**. Do not run `gh pr create` until the review docs are confirmed pushed.
 
 ## 11. Report
 
