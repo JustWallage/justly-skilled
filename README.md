@@ -12,6 +12,8 @@ agents/
 commands/
   justly-implement.md            # /justly-implement — full spec→validate→build→review→PR flow
 scripts/
+  install-micro.sh               # curl|bash installer — lean *-micro variants (default)
+  install.sh                     # curl|bash installer — full variants
   new-worktree.sh                # bootstraps an isolated worktree (used by `pnpm worktree`)
 ```
 
@@ -20,7 +22,38 @@ until the design is approved, implements, then loops the code past `justly-revie
 approved, then opens a PR. Each subagent's `.md` is its system prompt (full rubric + verdict
 format) — the command passes only runtime args, never restates the rubric.
 
-## Deploy
+## Install (agents + commands)
+
+No clone needed — downloads the repo tarball and copies the `.md` files in. Default
+installs the lean `*-micro` variants:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/JustWallage/justly-skilled/main/scripts/install-micro.sh | bash
+```
+
+Full (verbose) variants instead:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/JustWallage/justly-skilled/main/scripts/install.sh | bash
+```
+
+Both prompt for global (`~/.claude`) vs local (current project's `.claude`). Flags skip
+the prompts:
+
+```bash
+... | bash -s -- --global         # ~/.claude
+... | bash -s -- --local [DIR]     # DIR/.claude (default: cwd)
+... | bash -s -- --global --yes    # also overwrite differing files without asking
+```
+
+**Re-run to update.** It compares your installed files to the latest: if they already
+match it says so and does nothing; if they differ it lists them and asks before
+overwriting (`--yes` to skip the prompt).
+
+Copies, not symlinks — a committed copy travels correctly on clone, but a committed
+symlink stores an absolute path and dangles on teammates' machines.
+
+## Deploy (manual)
 
 - Agents → `~/.claude/agents/` or `<package>/.claude/agents/`
 - Command → `~/.claude/commands/` or `<package>/.claude/commands/`
