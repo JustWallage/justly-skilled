@@ -1,7 +1,7 @@
 # justly-skilled
 
 Minimalistic agentic code implementation loop skill.
-- User provides your request
+- User provides request
 - LLM Sets up worktree
 - LLM asks you to clarify the genuine open ends
 - LLM Writes spec file
