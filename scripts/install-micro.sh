@@ -8,10 +8,14 @@
 # Re-run to update: if your installed files already match, it says so and does nothing;
 # if they differ, it asks before overwriting.
 #
+# Also offers (y/n) to prepend justly-CLAUDE.md into your global ~/.claude/CLAUDE.md
+# (the memory file Claude Code loads every session). It goes in as a marked block, so
+# re-runs update it in place rather than duplicating it.
+#
 # Flags (skip prompts):
 #   -g, --global         install to ~/.claude
 #   -l, --local [DIR]    install to DIR/.claude (DIR defaults to current dir)
-#   -y, --yes            overwrite differing files without asking
+#   -y, --yes            overwrite differing files AND accept the CLAUDE.md prompt
 #   -h, --help           show this
 
 MICRO=1   # 1 = only *-micro.md ; 0 = only the full versions
@@ -91,19 +95,70 @@ for i in "${!srcs[@]}"; do
 done
 
 if [ "${#changed[@]}" -eq 0 ] && [ "$missing" -eq 0 ]; then
-  echo "Already installed — all ${#srcs[@]} file(s) match the latest version. Nothing to do."
-  exit 0
-fi
-
-if [ "${#changed[@]}" -gt 0 ]; then
-  echo "Newer/different version available for ${#changed[@]} file(s): ${changed[*]}"
-  if [ "$assume_yes" -ne 1 ]; then
-    [ -e /dev/tty ] || { echo "Differs from installed. Re-run with --yes to overwrite." >&2; exit 1; }
-    ans="$(prompt_tty "Overwrite your current version? [y/N]: ")"
-    case "$ans" in y|Y|yes) ;; *) echo "Kept current version. Nothing changed."; exit 0 ;; esac
+  echo "Already installed — all ${#srcs[@]} file(s) match the latest version."
+else
+  do_copy=1
+  if [ "${#changed[@]}" -gt 0 ]; then
+    echo "Newer/different version available for ${#changed[@]} file(s): ${changed[*]}"
+    if [ "$assume_yes" -ne 1 ]; then
+      [ -e /dev/tty ] || { echo "Differs from installed. Re-run with --yes to overwrite." >&2; exit 1; }
+      ans="$(prompt_tty "Overwrite your current version? [y/N]: ")"
+      case "$ans" in y|Y|yes) ;; *) echo "Kept current version. Nothing changed."; do_copy=0 ;; esac
+    fi
+  fi
+  if [ "$do_copy" -eq 1 ]; then
+    mkdir -p "$base/agents" "$base/commands"
+    for i in "${!srcs[@]}"; do cp -f "${srcs[$i]}" "${dsts[$i]}"; done
+    echo "Installed to $base: ${#srcs[@]} file(s) (${missing} new, ${#changed[@]} updated, ${same} unchanged)."
   fi
 fi
 
-mkdir -p "$base/agents" "$base/commands"
-for i in "${!srcs[@]}"; do cp -f "${srcs[$i]}" "${dsts[$i]}"; done
-echo "Installed to $base: ${#srcs[@]} file(s) (${missing} new, ${#changed[@]} updated, ${same} unchanged)."
+# Offer to prepend justly-CLAUDE.md into the global (~/.claude) CLAUDE.md that Claude Code
+# loads every session. Wrapped in markers so re-runs replace the block instead of stacking.
+srcmd="$src/justly-CLAUDE.md"
+if [ -e "$srcmd" ]; then
+  dest="$HOME/.claude/CLAUDE.md"
+  begin="<!-- BEGIN justly-skilled (managed block — edits here are overwritten on re-run) -->"
+  end="<!-- END justly-skilled -->"
+  block="$(printf '%s\n%s\n%s' "$begin" "$(cat "$srcmd")" "$end")"
+
+  cur=""
+  if [ -e "$dest" ] && grep -qF "$begin" "$dest"; then
+    cur="$(awk -v b="$begin" -v e="$end" 'index($0,b){f=1} f{print} index($0,e){f=0}' "$dest")"
+  fi
+
+  if [ "$cur" = "$block" ]; then
+    echo "Global CLAUDE.md already current ($dest). Nothing to do."
+  else
+    verb="prepend justly-CLAUDE.md to"; [ -e "$dest" ] || verb="create"
+    do_md="$assume_yes"
+    if [ "$assume_yes" -ne 1 ] && [ -e /dev/tty ]; then
+      ans="$(prompt_tty "Also ${verb} your global CLAUDE.md ($dest)? [y/N]: ")"
+      case "$ans" in y|Y|yes) do_md=1 ;; *) do_md=0 ;; esac
+    fi
+    if [ "$do_md" = 1 ]; then
+      mkdir -p "$HOME/.claude"
+      if [ -e "$dest" ] && grep -qF "$begin" "$dest"; then
+        # Update the existing block where it sits — keep anything above and below it.
+        printf '%s\n' "$block" > "$tmp/claude-block.md"
+        awk -v b="$begin" -v e="$end" -v bf="$tmp/claude-block.md" '
+          index($0,b){ while ((getline line < bf) > 0) print line; close(bf); skip=1; next }
+          skip && index($0,e){ skip=0; next }
+          skip { next }
+          { print }
+        ' "$dest" > "$dest.tmp" && mv "$dest.tmp" "$dest"
+        echo "Updated justly-skilled block in $dest (kept in place)."
+      elif [ -e "$dest" ]; then
+        # No block yet — prepend it above your existing content.
+        rest="$(cat "$dest")"
+        printf '%s\n\n%s\n' "$block" "$rest" > "$dest"
+        echo "Prepended justly-skilled block to $dest."
+      else
+        printf '%s\n' "$block" > "$dest"
+        echo "Created $dest with justly-skilled block."
+      fi
+    else
+      echo "Skipped global CLAUDE.md."
+    fi
+  fi
+fi

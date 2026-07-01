@@ -27,6 +27,12 @@ curl -fsSL https://raw.githubusercontent.com/JustWallage/justly-skilled/main/scr
 match it says so and does nothing; if they differ it lists them and asks before
 overwriting.
 
+**Global CLAUDE.md.** After installing, it also asks (y/n) whether to prepend
+`justly-CLAUDE.md` into your global `~/.claude/CLAUDE.md` — the memory file Claude Code
+loads in every session, across all projects (created if you don't have one). It's
+written as a marked block, so re-running updates that block in place and leaves the rest
+of your CLAUDE.md untouched. `--yes` accepts this prompt too.
+
 ## Deploy (manual)
 
 - Agents → `~/.claude/agents/` or `<package>/.claude/agents/`
