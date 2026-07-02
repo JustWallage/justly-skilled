@@ -1,5 +1,13 @@
 # justly-skilled
 
+AI coding is great for speed, but fails on trust — unreviewed output means shipping on faith.
+
+This simple skill inserts two independent verification gates: a spec review and code review, each runs in fresh context. The HITL step happens _after_ the review loops, so many were solved before you see them.
+
+Used to build [JustWallage/news](https://github.com/JustWallage/news)!
+
+## The solution
+
 Minimalistic agentic code implementation loop skill.
 - User provides request
 - LLM Sets up worktree
@@ -12,6 +20,8 @@ Minimalistic agentic code implementation loop skill.
 - Subagent Code review loop, runs with new context, loops until code APPROVED (max 3x)
 
 ## Installation
+
+Recommended version (micro):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/JustWallage/justly-skilled/main/scripts/install-micro.sh | bash
