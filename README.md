@@ -16,6 +16,7 @@ Minimalistic agentic code implementation loop skill.
 - Subagent Solution Architect review loop, runs with new context, loops until spec APPROVED (max 3x)
 - LLM Writes summary of all decisions (AI + User made)
 - LLM Asks user for confirmation / Changes
+- User confirms
 - LLM Implements code
 - Subagent Code review loop, runs with new context, loops until code APPROVED (max 3x)
 
