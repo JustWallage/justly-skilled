@@ -1,6 +1,6 @@
 # justly-skilled
 
-AI coding is great for speed, but fails on trust — a human check remains invaluable, but finding simple issues AI could've solve itself is wasted time.
+AI coding is great for speed, but fails on trust — a human check remains invaluable, but finding simple issues AI could've solved itself is wasted time.
 
 This simple skill inserts two independent verification gates: a spec review and code review, each runs in fresh context. The HITL step happens _after_ the review loops, so the simple issues and quick wins are solved before you see them.
 
